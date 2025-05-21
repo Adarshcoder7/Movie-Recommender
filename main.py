@@ -54,7 +54,16 @@ def recommend(movie):
 # Load data
 moviedict = pickle.load(open('movie_dict2.pkl', 'rb'))
 movies = pd.DataFrame(moviedict)
-similarity = pickle.load(open('similarity2.pkl', 'rb'))
+def download_file_from_google_drive(file_id, destination):
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    response = requests.get(url)
+    with open(destination, 'wb') as f:
+        f.write(response.content)
+
+if not os.path.exists("similarity2.pkl"):
+    download_file_from_google_drive("1xB6RcMzWYOMBnMCXsjq5D519guviTmyk", "similarity2.pkl")
+with open('similarity2.pkl', 'rb') as f:
+    similarity = pickle.load(f)
 
 # Set page config
 st.set_page_config(page_title="Animated Movie Recommender", layout="wide")
