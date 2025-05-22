@@ -56,14 +56,36 @@ def recommend(movie):
 moviedict = pickle.load(open('movie_dict2.pkl', 'rb'))
 movies = pd.DataFrame(moviedict)
 def download_file_from_google_drive(file_id, destination):
-    url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    response = requests.get(url)
-    with open(destination, 'wb') as f:
-        f.write(response.content)
+    def get_confirm_token(response):
+        for key, value in response.cookies.items():
+            if key.startswith('download_warning'):
+                return value
+        return None
 
+    def save_response_content(response, destination):
+        with open(destination, "wb") as f:
+            for chunk in response.iter_content(32768):
+                if chunk:  # filter out keep-alive chunks
+                    f.write(chunk)
+
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+
+    response = session.get(URL, params={'id': file_id}, stream=True)
+    token = get_confirm_token(response)
+
+    if token:
+        params = {'id': file_id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+
+    save_response_content(response, destination)
+
+# Only download if not already present
 if not os.path.exists("similarity2.pkl"):
     download_file_from_google_drive("1rKUInmfh17kNkE4dSgB7umf6znkP3c4m", "similarity2.pkl")
-with open('similarity2.pkl', 'rb') as f:
+
+# Load the file
+with open("similarity2.pkl", "rb") as f:
     similarity = pickle.load(f)
 
 # Set page config
