@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import requests
+import os
 
 # Fetch movie details
 def fetch_movie_details(movie_id):
